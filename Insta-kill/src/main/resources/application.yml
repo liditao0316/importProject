@@ -1,0 +1,67 @@
+spring:
+  # thymeleaf
+  thymeleaf:
+    #close cache
+    cache: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/Insta-kill?characterEncoding=utf8
+    username: root
+    password: 12345678Ldt.
+    hikari:
+      pool-name: DateHikariCP
+      #??????
+      minimum-idle: 5
+      #????????????????
+      idle-timeout: 180000
+      #?????
+      maximum-pool-size: 10
+      #?????????????
+      auto-commit: true
+      #???????????30??
+      max-lifetime: 180000
+      #?????????30?
+      connection-timeout: 30000
+
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    connect-timeout: 10000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: 10000ms
+        max-idle: 200
+        min-idle: 5
+  rabbitmq:
+    host: 112.74.108.226
+    username: admin
+    password: admin
+    virtual-host: /
+    port: 5672
+    listener:
+      simple:
+        concurrency: 10
+        max-concurrency: 10
+        prefetch: 1
+        auto-startup: true
+        default-requeue-rejected: true
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000ms
+        max-attempts: 3
+
+mybatis-plus:
+  #??Mapper.xml????
+  mapper-locations: classpath*:/mapper/*Mapper.xml
+  #??Mybatis????????
+  type-aliases-package: com.system.instaKill.pojo
+
+
+#MyBatis SQL??(???????????Mapper.xml????)
+logging:
+  level:
+    com.system.instakill.mapper: debug
+

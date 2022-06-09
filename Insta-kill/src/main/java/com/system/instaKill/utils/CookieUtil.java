@@ -1,0 +1,259 @@
+package com.system.instaKill.utils;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+
+/**
+ * Cookie工具类
+ *
+ * @author: LC
+ * @date 2022/3/2 5:48 下午
+ * @ClassName: CookieUtil
+ */
+@SuppressWarnings({"all"})
+public final class CookieUtil {
+
+    /**
+     * 得到Cookie的值, 不编码
+     *
+     * @param request
+     * @param cookieName
+     * @return
+     */
+    public static String getCookieValue(HttpServletRequest request, String cookieName) {
+        return getCookieValue(request, cookieName, false);
+    }
+
+    /**
+     * 得到Cookie的值,
+     *
+     * @param request
+     * @param cookieName
+     * @return
+     */
+    public static String getCookieValue(HttpServletRequest request, String cookieName, boolean isDecoder) {
+        Cookie[] cookieList = request.getCookies();
+        if (cookieList == null || cookieName == null) {
+            return null;
+        }
+        String retValue = null;
+        try {
+            for (int i = 0; i < cookieList.length; i++) {
+                if (cookieList[i].getName().equals(cookieName)) {
+                    if (isDecoder) {
+                        retValue = URLDecoder.decode(cookieList[i].getValue(), "UTF-8");
+                    } else {
+                        retValue = cookieList[i].getValue();
+                    }
+                    break;
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return retValue;
+    }
+
+    /**
+     * 得到Cookie的值,
+     *
+     * @param request
+     * @param cookieName
+     * @return
+     */
+    public static String getCookieValue(HttpServletRequest request, String cookieName, String encodeString) {
+        Cookie[] cookieList = request.getCookies();
+        if (cookieList == null || cookieName == null) {
+            return null;
+        }
+        String retValue = null;
+        try {
+            for (int i = 0; i < cookieList.length; i++) {
+                if (cookieList[i].getName().equals(cookieName)) {
+                    retValue = URLDecoder.decode(cookieList[i].getValue(), encodeString);
+                    break;
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return retValue;
+    }
+
+    /**
+     * 设置Cookie的值 不设置生效时间默认浏览器关闭即失效,也不编码
+     */
+    public static void setCookie(HttpServletRequest request, HttpServletResponse response, String cookieName,
+                                 String cookieValue) {
+        setCookie(request, response, cookieName, cookieValue, 3600);
+    }
+
+    /**
+     * 设置Cookie的值 在指定时间内生效,但不编码
+     */
+    public static void setCookie(HttpServletRequest request, HttpServletResponse response, String cookieName,
+                                 String cookieValue, int cookieMaxage) {
+        setCookie(request, response, cookieName, cookieValue, cookieMaxage, true);
+    }
+
+    /**
+     * 设置Cookie的值 不设置生效时间,但编码
+     */
+    public static void setCookie(HttpServletRequest request, HttpServletResponse response, String cookieName,
+                                 String cookieValue, boolean isEncode) {
+        setCookie(request, response, cookieName, cookieValue, -1, isEncode);
+    }
+
+    /**
+     * 设置Cookie的值 在指定时间内生效, 编码参数
+     */
+    public static void setCookie(HttpServletRequest request, HttpServletResponse response, String cookieName,
+                                 String cookieValue, int cookieMaxage, boolean isEncode) {
+        doSetCookie(request, response, cookieName, cookieValue, cookieMaxage, isEncode);
+    }
+
+    /**
+     * 设置Cookie的值 在指定时间内生效, 编码参数(指定编码)
+     */
+    public static void setCookie(HttpServletRequest request, HttpServletResponse response, String cookieName,
+                                 String cookieValue, int cookieMaxage, String encodeString) {
+        doSetCookie(request, response, cookieName, cookieValue, cookieMaxage, encodeString);
+    }
+
+    /**
+     * 删除Cookie带cookie域名
+     */
+    public static void deleteCookie(HttpServletRequest request, HttpServletResponse response,
+                                    String cookieName) {
+        doSetCookie(request, response, cookieName, "", -1, false);
+    }
+
+    /**
+     * 设置Cookie的值，并使其在指定时间内生效
+     *
+     * @param cookieMaxage cookie生效的最大秒数
+     */
+    private static final void doSetCookie(HttpServletRequest request, HttpServletResponse response,
+                                          String cookieName, String cookieValue, int cookieMaxage, boolean isEncode) {
+        try {
+            if (cookieValue == null) {
+                cookieValue = "";
+            } else if (isEncode) {
+                cookieValue = URLEncoder.encode(cookieValue, "utf-8");
+            }
+            Cookie cookie = new Cookie(cookieName, cookieValue);
+            if (cookieMaxage > 0)
+                cookie.setMaxAge(cookieMaxage);
+            if (null != request) {// 设置域名的cookie
+                String domainName = getDomainName(request);
+                System.out.println(domainName);
+                if (!"localhost".equals(domainName)) {
+                    cookie.setDomain(domainName);
+                }
+            }
+            cookie.setPath("/");
+            System.out.println(cookie);
+            response.addCookie(cookie);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 设置Cookie的值，并使其在指定时间内生效
+     *
+     * @param cookieMaxage cookie生效的最大秒数
+     */
+    private static final void doSetCookie(HttpServletRequest request, HttpServletResponse response,
+                                          String cookieName, String cookieValue, int cookieMaxage, String encodeString) {
+        try {
+            if (cookieValue == null) {
+                cookieValue = "";
+            } else {
+                cookieValue = URLEncoder.encode(cookieValue, encodeString);
+            }
+            Cookie cookie = new Cookie(cookieName, cookieValue);
+            if (cookieMaxage > 0) {
+                cookie.setMaxAge(cookieMaxage);
+            }
+            if (null != request) {// 设置域名的cookie
+                String domainName = getDomainName(request);
+                System.out.println(domainName);
+                if (!"localhost".equals(domainName)) {
+                    cookie.setDomain(domainName);
+                }
+            }
+            cookie.setPath("/");
+            System.out.println("--"+cookie.getValue());
+            response.addCookie(cookie);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 得到cookie的域名
+     */
+    private static final String getDomainName(HttpServletRequest request) {
+        String domainName = null;
+        // 通过request对象获取访问的url地址
+        String serverName = request.getRequestURL().toString();
+        // 将url地下转换为小
+        serverName = serverName.toLowerCase();
+        // 如果url地址是以http://开头  将http://截取
+        if (serverName.startsWith("http://")) {
+            serverName = serverName.substring(7);
+        }
+        int end0 = serverName.length();
+        int end1 = serverName.length();
+        // 判断url地址是否包含"/"
+        if (serverName.contains("/")) {
+            //得到第一个"/"出现的位置
+            end0 = serverName.indexOf(":");
+            end1 = serverName.indexOf("/");
+        }
+        // 截取
+        if(end0!=-1){
+            serverName = serverName.substring(0, end0);
+
+        }else{
+            serverName = serverName.substring(0,end1);
+        }
+        return serverName;
+    }
+    private static final String getDomainName(String serverName) {
+
+
+            // 将url地下转换为小写
+            serverName = serverName.toLowerCase();
+            // 如果url地址是以http://开头  将http://截取
+            if (serverName.startsWith("http://")) {
+                serverName = serverName.substring(7);
+            }
+            int end0 = serverName.length();
+            int end1 = serverName.length();
+            // 判断url地址是否包含"/"
+            if (serverName.contains("/")) {
+                //得到第一个"/"出现的位置
+                end0 = serverName.indexOf(":");
+                end1 = serverName.indexOf("/");
+            }
+            // 截取
+            if(end0!=-1){
+                serverName = serverName.substring(0, end0);
+
+            }else{
+                serverName = serverName.substring(0,end1);
+            }
+            return serverName;
+    }
+
+    public static void main(String[] args) {
+        String domainName = getDomainName("http://10.253.71.228:8080/login/doLogin");
+        System.out.println(domainName);
+    }
+}

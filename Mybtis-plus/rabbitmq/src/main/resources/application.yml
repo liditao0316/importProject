@@ -1,0 +1,18 @@
+spring:
+  rabbitmq:
+    username: admin
+    password: admin
+    virtual-host: /
+    listener:
+      simple:
+        concurrency: 10
+        max-concurrency: 10
+        prefetch: 1
+        auto-startup: true
+        default-requeue-rejected: true
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000ms
+        max-attempts: 3
+    addresses: 172.16.210.134:5672,172.16.210.131:5672,172.16.210.133:5672
